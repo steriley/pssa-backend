@@ -5,9 +5,12 @@ const { connect, client } = require('../db');
 const queries = require('../queries/');
 const isAuthenticated = require('../middleware/is-authorised');
 const { annualScores, getScore, rankResults } = require('../helpers');
+const usersRouter = require('./users');
 
 const router = express.Router();
 let db;
+
+router.use('/user', usersRouter);
 
 router.use(async (req, res, next) => {
   db = await connect();

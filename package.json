@@ -4,7 +4,7 @@
   "description": "Checking out the serverless setup for Vercel",
   "main": "./api/index.js",
   "scripts": {
-    "api": "nodemon ./bin/www",
+    "dev": "nodemon ./bin/www",
     "start": "node ./bin/www"
   },
   "repository": {
