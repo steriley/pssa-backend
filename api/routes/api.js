@@ -31,7 +31,7 @@ async function createDocument(collectionName, data) {
 
 router.get('/', (_, res) => res.json({ hello: `world` }));
 
-router.get('/competition', async (req, res, next) => {
+router.get('/competition', async (req, res) => {
   const { published } = req.query;
   const query = published ? {} : { published: true };
   const sort = { date: -1 };
@@ -43,7 +43,6 @@ router.get('/competition', async (req, res, next) => {
   let results = await collection.find(query, { sort, projection }).toArray();
 
   res.json(results);
-  next();
 });
 
 router.get('/competition/:competitionId', async (req, res, next) => {
