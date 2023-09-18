@@ -1,33 +1,23 @@
 {
-  "name": "vercel-serverless",
+  "name": "pssa-backend",
   "version": "1.0.0",
-  "description": "Checking out the serverless setup for Vercel",
-  "main": "./api/index.js",
+  "description": "Express with Mongo Backend for PSSA",
+  "homepage": "https://github.com/steriley/pssa-backend#readme",
+  "author": "Stephen Riley",
+  "license": "UNLICENSED",
   "scripts": {
-    "dev": "nodemon ./bin/www",
-    "start": "node ./bin/www"
+    "start": "vercel dev"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/steriley/vercel-serverless.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/steriley/vercel-serverless/issues"
-  },
-  "homepage": "https://github.com/steriley/vercel-serverless#readme",
   "dependencies": {
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "http-errors": "^2.0.0",
+    "cookie-parser": "1.4.6",
+    "cors": "2.8.5",
+    "dotenv": "16.3.1",
+    "express": "4.18.2",
+    "http-errors": "2.0.0",
     "jsonwebtoken": "9.0.2",
-    "mongodb": "6.0.0",
-    "morgan": "^1.10.0",
-    "underscore": "^1.13.6"
+    "mongodb": "6.1.0",
+    "morgan": "1.10.0",
+    "underscore": "1.13.6"
   },
   "devDependencies": {
     "nodemon": "3.0.1"
