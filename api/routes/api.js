@@ -17,6 +17,8 @@ router.use(async (req, res, next) => {
   next();
 });
 
+const closeConnection = () => client.close();
+
 async function createDocument(collectionName, data) {
   // TODO: shouldn't need to do this weird update with id - this is because of old legacy id use
   // refactor data and make this a straight forward insertOne
@@ -48,7 +50,7 @@ router.get('/competition', async (req, res) => {
   res.json(results);
 });
 
-router.get('/competition/:competitionId', async (req, res, next) => {
+router.get('/competition/:competitionId', async (req, res) => {
   const { competitionId } = req.params;
   const query = queries.resultTable(parseInt(competitionId));
 
@@ -56,24 +58,21 @@ router.get('/competition/:competitionId', async (req, res, next) => {
   let results = await collection.aggregate(query).toArray();
 
   res.json(results);
-  next();
+  closeConnection();
 });
 
-router.get(
-  '/history/:competitorId/:classId/:distance',
-  async (req, res, next) => {
-    const { competitorId, classId, distance } = req.params;
-    const query = queries.scoreHistory(competitorId, classId, distance);
+router.get('/history/:competitorId/:classId/:distance', async (req, res) => {
+  const { competitorId, classId, distance } = req.params;
+  const query = queries.scoreHistory(competitorId, classId, distance);
 
-    let collection = db.collection('results');
-    let results = await collection.aggregate(query).toArray();
+  let collection = db.collection('results');
+  let results = await collection.aggregate(query).toArray();
 
-    res.json(results);
-    next();
-  }
-);
+  res.json(results);
+  closeConnection();
+});
 
-router.get('/edit/competition/:id', async (req, res, next) => {
+router.get('/edit/competition/:id', async (req, res) => {
   const { id } = req.params;
   const query = { id: parseInt(id) };
 
@@ -81,10 +80,10 @@ router.get('/edit/competition/:id', async (req, res, next) => {
   let results = await collection.findOne(query);
 
   res.json(results);
-  next();
+  closeConnection();
 });
 
-router.put('/edit/competition/:id', isAuthenticated, async (req, res, next) => {
+router.put('/edit/competition/:id', isAuthenticated, async (req, res) => {
   const { _id, day, month, year, distance } = req.body;
   const query = { _id: new ObjectId(_id) };
   const $set = {
@@ -97,10 +96,10 @@ router.put('/edit/competition/:id', isAuthenticated, async (req, res, next) => {
   await collection.updateOne(query, { $set });
 
   res.json({ ...$set, _id: req.params.id });
-  next();
+  closeConnection();
 });
 
-router.post('/competition/create', isAuthenticated, async (req, res, next) => {
+router.post('/competition/create', isAuthenticated, async (req, res) => {
   const { day, month, year, distance } = req.body;
   const date = new Date(`${year}-${month}-${day}`).toISOString();
   const doc = { date, distance, published: false };
@@ -108,10 +107,10 @@ router.post('/competition/create', isAuthenticated, async (req, res, next) => {
   let result = await createDocument('competitions', doc);
 
   res.json(result);
-  next();
+  closeConnection();
 });
 
-router.delete('/competition/:id', isAuthenticated, async (req, res, next) => {
+router.delete('/competition/:id', isAuthenticated, async (req, res) => {
   const id = parseInt(req.params.id);
 
   let collectionResults = db.collection('results');
@@ -127,99 +126,91 @@ router.delete('/competition/:id', isAuthenticated, async (req, res, next) => {
       : `No competition found to delete`;
 
   res.json({ message });
-  next();
+  closeConnection();
 });
 
-router.get('/clubs', async (_, res, next) => {
+router.get('/clubs', async (_, res) => {
   let collection = db.collection('clubs');
   let results = await collection.find().sort({ club: 1 }).toArray();
 
   res.json(results);
-  next();
+  closeConnection();
 });
 
-router.post('/create/club', isAuthenticated, async (req, res, next) => {
+router.post('/create/club', isAuthenticated, async (req, res) => {
   const { name } = req.body;
   const doc = { club: name };
 
   let result = await createDocument('clubs', doc);
 
   res.json(result);
-  next();
+  closeConnection();
 });
 
-router.get('/classes', async (_, res, next) => {
+router.get('/classes', async (_, res) => {
   let collection = db.collection('classes');
   let results = await collection.find().sort({ type: -1 }).toArray();
 
   res.json(results);
-  next();
+  closeConnection();
 });
 
-router.post('/create/class', isAuthenticated, async (req, res, next) => {
+router.post('/create/class', isAuthenticated, async (req, res) => {
   const { name } = req.body;
   const doc = { type: name };
 
   let result = await createDocument('classes', doc);
 
   res.json(result);
-  next();
+  closeConnection();
 });
 
-router.get('/competitors', async (_, res, next) => {
+router.get('/competitors', async (_, res) => {
   let collection = db.collection('competitors');
   let results = await collection.find().sort({ name: 1 }).toArray();
 
   res.json(results);
-  next();
+  closeConnection();
 });
 
-router.post('/create/competitor', isAuthenticated, async (req, res, next) => {
+router.post('/create/competitor', isAuthenticated, async (req, res) => {
   const { name, club } = req.body;
   const doc = { name, club: parseInt(club) };
 
   let result = await createDocument('competitors', doc);
 
   res.json(result);
-  next();
+  closeConnection();
 });
 
-router.post(
-  '/update/competitor/:id',
-  isAuthenticated,
-  async (req, res, next) => {
-    const { id } = req.params;
-    const query = { id: parseInt(id) };
+router.post('/update/competitor/:id', isAuthenticated, async (req, res) => {
+  const { id } = req.params;
+  const query = { id: parseInt(id) };
 
-    let collection = db.collection('competitors');
-    let results = await collection.findOne(query);
+  let collection = db.collection('competitors');
+  let results = await collection.findOne(query);
 
-    res.json(results);
-    next();
-  }
-);
+  res.json(results);
+  closeConnection();
+});
 
-router.put(
-  '/update/competitor/:id',
-  isAuthenticated,
-  async (req, res, next) => {
-    const { name, club } = req.body;
-    const query = { id: parseInt(req.params.id) };
-    const $set = {
-      name,
-      club: parseInt(club),
-    };
+router.put('/update/competitor/:id', isAuthenticated, async (req, res) => {
+  const { name, club } = req.body;
+  const query = { id: parseInt(req.params.id) };
+  const $set = {
+    name,
+    club: parseInt(club),
+  };
 
-    let collection = db.collection('competitors');
+  let collection = db.collection('competitors');
 
-    await collection.updateOne(query, { $set });
+  await collection.updateOne(query, { $set });
 
-    res.json({ message: `competitor ${name} updated` });
-    next();
-  }
-);
+  res.json({ message: `competitor ${name} updated` });
+  closeConnection();
+});
 
-router.post('/create/result', isAuthenticated, async (req, res, next) => {
+router.post('/create/result', isAuthenticated, async (req, res) => {
   const { classid, competid, compid, points, vbull: bull } = req.body;
   const { vbull, score } = getScore(points, bull);
   const doc = {
@@ -232,13 +223,13 @@ router.post('/create/result', isAuthenticated, async (req, res, next) => {
     rank: 0,
   };
 
-  let result = createDocument('results', doc);
+  let result = await createDocument('results', doc);
 
   res.json(result);
-  next();
+  closeConnection();
 });
 
-router.delete('/result/:id', isAuthenticated, async (req, res, next) => {
+router.delete('/result/:id', isAuthenticated, async (req, res) => {
   const query = { _id: new ObjectId(req.params.id) };
   let collection = db.collection('results');
   let result = await collection.deleteOne(query);
@@ -249,10 +240,10 @@ router.delete('/result/:id', isAuthenticated, async (req, res, next) => {
       : `No result found to delete`;
 
   res.json({ message });
-  next();
+  closeConnection();
 });
 
-router.put('/result/:id', isAuthenticated, async (req, res, next) => {
+router.put('/result/:id', isAuthenticated, async (req, res) => {
   const _id = new ObjectId(req.params.id);
   const { classid, competid, compid, points, vbull: bull } = req.body;
   const { vbull, score } = getScore(points, bull);
@@ -272,10 +263,10 @@ router.put('/result/:id', isAuthenticated, async (req, res, next) => {
   await collection.updateOne(query, { $set });
 
   res.json({ ...$set, _id: req.params.id });
-  next();
+  closeConnection();
 });
 
-router.put('/publish/:id', isAuthenticated, async (req, res, next) => {
+router.put('/publish/:id', isAuthenticated, async (req, res) => {
   const id = parseInt(req.params.id);
   const { published } = req.body;
   const query = { id };
@@ -292,10 +283,10 @@ router.put('/publish/:id', isAuthenticated, async (req, res, next) => {
   const message = published ? 'results published' : 'results hidden';
 
   res.json({ message });
-  next();
+  closeConnection();
 });
 
-router.put('/merge/:oldId/:newId', isAuthenticated, async (req, res, next) => {
+router.put('/merge/:oldId/:newId', isAuthenticated, async (req, res) => {
   const { oldId: oldCompetitorId, newId: competitorId } = req.params;
   const query = { competid: parseInt(oldCompetitorId) };
   const update = { $set: { competid: parseInt(competitorId) } };
@@ -307,10 +298,10 @@ router.put('/merge/:oldId/:newId', isAuthenticated, async (req, res, next) => {
   await competitors.deleteOne({ id: parseInt(oldCompetitorId) });
 
   res.json({ message: 'competitor data has been merged' });
-  next();
+  closeConnection();
 });
 
-router.get('/overall/:year/:classId', async (req, res, next) => {
+router.get('/overall/:year/:classId', async (req, res) => {
   const { classId, year } = req.params;
   const query = queries.annualScores(classId, year);
 
@@ -319,11 +310,7 @@ router.get('/overall/:year/:classId', async (req, res, next) => {
   let results = annualScores(data);
 
   res.json(results);
-  next();
-});
-
-router.use(async (req, res, next) => {
-  await client.close();
+  closeConnection();
 });
 
 module.exports = router;
