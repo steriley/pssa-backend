@@ -74,7 +74,7 @@ async function rankResults(db, query) {
     })
   );
 
-  collection.bulkWrite(rankedPoints);
+  await collection.bulkWrite(rankedPoints);
 
   return rankedPoints;
 }

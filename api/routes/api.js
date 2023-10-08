@@ -278,7 +278,7 @@ router.put('/publish/:id', isAuthenticated, async (req, res) => {
 
   // calculate the competitor points for published competition
   const rankQuery = queries.ranking(id);
-  rankResults(db, rankQuery);
+  await rankResults(db, rankQuery);
 
   const message = published ? 'results published' : 'results hidden';
 
