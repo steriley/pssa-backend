@@ -31,7 +31,13 @@ async function createDocument(collectionName, data) {
   let id = incrementId(lastId);
   let obj = { id, ...data };
 
-  return await collection.insertOne(obj);
+  const insert = await collection.insertOne(obj);
+
+  return {
+    id,
+    ...data,
+    _id: insert.insertedId,
+  };
 }
 
 router.get('/', (_, res) => res.json({ hello: `world` }));
@@ -41,7 +47,7 @@ router.get('/competition', async (req, res) => {
   const query = published ? {} : { published: true };
   const sort = { date: -1 };
   const projection = published
-    ? { _id: 0, id: 1, date: 1, distance: 1, published: 1 }
+    ? { _id: 1, id: 1, date: 1, distance: 1, published: 1 }
     : { _id: 0, id: 1, date: 1, distance: 1 };
 
   let collection = db.collection('competitions');

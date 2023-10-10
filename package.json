@@ -6,7 +6,8 @@
   "author": "Stephen Riley",
   "license": "UNLICENSED",
   "scripts": {
-    "start": "vercel dev"
+    "start": "vercel dev",
+    "express": "nodemon ./bin/www"
   },
   "dependencies": {
     "body-parser": "1.20.2",
