@@ -10,8 +10,6 @@ const user = {
   password: appPass,
 };
 
-router.get('/', (_, res) => res.json({ hello: `user` }));
-
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
   const expiresIn = 24 * 60 * 60; // 1 day;

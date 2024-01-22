@@ -17,8 +17,6 @@ router.use(async (req, res, next) => {
   next();
 });
 
-const closeConnection = () => client.close();
-
 async function createDocument(collectionName, data) {
   // TODO: shouldn't need to do this weird update with id - this is because of old legacy id use
   // refactor data and make this a straight forward insertOne
@@ -64,7 +62,6 @@ router.get('/competition/:competitionId', async (req, res) => {
   let results = await collection.aggregate(query).toArray();
 
   res.json(results);
-  closeConnection();
 });
 
 router.get('/history/:competitorId/:classId/:distance', async (req, res) => {
@@ -75,7 +72,6 @@ router.get('/history/:competitorId/:classId/:distance', async (req, res) => {
   let results = await collection.aggregate(query).toArray();
 
   res.json(results);
-  closeConnection();
 });
 
 router.get('/edit/competition/:id', async (req, res) => {
@@ -86,7 +82,6 @@ router.get('/edit/competition/:id', async (req, res) => {
   let results = await collection.findOne(query);
 
   res.json(results);
-  closeConnection();
 });
 
 router.put('/edit/competition/:id', isAuthenticated, async (req, res) => {
@@ -102,7 +97,6 @@ router.put('/edit/competition/:id', isAuthenticated, async (req, res) => {
   await collection.updateOne(query, { $set });
 
   res.json({ ...$set, _id: req.params.id });
-  closeConnection();
 });
 
 router.post('/competition/create', isAuthenticated, async (req, res) => {
@@ -113,7 +107,6 @@ router.post('/competition/create', isAuthenticated, async (req, res) => {
   let result = await createDocument('competitions', doc);
 
   res.json(result);
-  closeConnection();
 });
 
 router.delete('/competition/:id', isAuthenticated, async (req, res) => {
@@ -132,7 +125,6 @@ router.delete('/competition/:id', isAuthenticated, async (req, res) => {
       : `No competition found to delete`;
 
   res.json({ message });
-  closeConnection();
 });
 
 router.get('/clubs', async (_, res) => {
@@ -140,7 +132,6 @@ router.get('/clubs', async (_, res) => {
   let results = await collection.find().sort({ club: 1 }).toArray();
 
   res.json(results);
-  closeConnection();
 });
 
 router.post('/create/club', isAuthenticated, async (req, res) => {
@@ -150,7 +141,6 @@ router.post('/create/club', isAuthenticated, async (req, res) => {
   let result = await createDocument('clubs', doc);
 
   res.json(result);
-  closeConnection();
 });
 
 router.get('/classes', async (_, res) => {
@@ -158,7 +148,6 @@ router.get('/classes', async (_, res) => {
   let results = await collection.find().sort({ type: -1 }).toArray();
 
   res.json(results);
-  closeConnection();
 });
 
 router.post('/create/class', isAuthenticated, async (req, res) => {
@@ -168,7 +157,6 @@ router.post('/create/class', isAuthenticated, async (req, res) => {
   let result = await createDocument('classes', doc);
 
   res.json(result);
-  closeConnection();
 });
 
 router.get('/competitors', async (_, res) => {
@@ -176,7 +164,6 @@ router.get('/competitors', async (_, res) => {
   let results = await collection.find().sort({ name: 1 }).toArray();
 
   res.json(results);
-  closeConnection();
 });
 
 router.post('/create/competitor', isAuthenticated, async (req, res) => {
@@ -186,7 +173,6 @@ router.post('/create/competitor', isAuthenticated, async (req, res) => {
   let result = await createDocument('competitors', doc);
 
   res.json(result);
-  closeConnection();
 });
 
 router.post('/update/competitor/:id', isAuthenticated, async (req, res) => {
@@ -197,7 +183,6 @@ router.post('/update/competitor/:id', isAuthenticated, async (req, res) => {
   let results = await collection.findOne(query);
 
   res.json(results);
-  closeConnection();
 });
 
 router.put('/update/competitor/:id', isAuthenticated, async (req, res) => {
@@ -213,7 +198,6 @@ router.put('/update/competitor/:id', isAuthenticated, async (req, res) => {
   await collection.updateOne(query, { $set });
 
   res.json({ message: `competitor ${name} updated` });
-  closeConnection();
 });
 
 router.post('/create/result', isAuthenticated, async (req, res) => {
@@ -232,7 +216,6 @@ router.post('/create/result', isAuthenticated, async (req, res) => {
   let result = await createDocument('results', doc);
 
   res.json(result);
-  closeConnection();
 });
 
 router.delete('/result/:id', isAuthenticated, async (req, res) => {
@@ -246,7 +229,6 @@ router.delete('/result/:id', isAuthenticated, async (req, res) => {
       : `No result found to delete`;
 
   res.json({ message });
-  closeConnection();
 });
 
 router.put('/result/:id', isAuthenticated, async (req, res) => {
@@ -269,7 +251,6 @@ router.put('/result/:id', isAuthenticated, async (req, res) => {
   await collection.updateOne(query, { $set });
 
   res.json({ ...$set, _id: req.params.id });
-  closeConnection();
 });
 
 router.put('/publish/:id', isAuthenticated, async (req, res) => {
@@ -289,7 +270,6 @@ router.put('/publish/:id', isAuthenticated, async (req, res) => {
   const message = published ? 'results published' : 'results hidden';
 
   res.json({ message });
-  closeConnection();
 });
 
 router.put('/merge/:oldId/:newId', isAuthenticated, async (req, res) => {
@@ -304,7 +284,6 @@ router.put('/merge/:oldId/:newId', isAuthenticated, async (req, res) => {
   await competitors.deleteOne({ id: parseInt(oldCompetitorId) });
 
   res.json({ message: 'competitor data has been merged' });
-  closeConnection();
 });
 
 router.get('/overall/:year/:classId', async (req, res) => {
@@ -316,7 +295,6 @@ router.get('/overall/:year/:classId', async (req, res) => {
   let results = annualScores(data);
 
   res.json(results);
-  closeConnection();
 });
 
 module.exports = router;
